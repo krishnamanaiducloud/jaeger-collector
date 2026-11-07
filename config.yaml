@@ -16,26 +16,37 @@ service:
                 host: 0.0.0.0
                 port: 8888
 extensions:
+  # Every listener binds all interfaces: without an explicit endpoint Jaeger 2.23 listens on
+  # localhost only, where probes and other pods cannot reach it.
   healthcheckv2:
     use_v2: true
     http:
+      endpoint: 0.0.0.0:13133
   jaeger_storage:
     backends:
       primary:
         elasticsearch:
-          server_urls: [${env:ES_SERVER_URL:-http://elasticsearch:9200}]
+          server_urls:
+            - ${env:ES_SERVER_URL:-http://elasticsearch:9200}
 receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: 0.0.0.0:4317
       http:
+        endpoint: 0.0.0.0:4318
   jaeger:
     protocols:
       grpc:
+        endpoint: 0.0.0.0:14250
       thrift_binary:
+        endpoint: 0.0.0.0:6832
       thrift_compact:
+        endpoint: 0.0.0.0:6831
       thrift_http:
+        endpoint: 0.0.0.0:14268
   zipkin:
+    endpoint: 0.0.0.0:9411
 processors:
   batch:
 exporters:
